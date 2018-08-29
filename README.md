@@ -4,6 +4,13 @@
 
 .gitattributes tracks big files that don't need to be transferred back and forth and instead will force git to just check the diffs and update locally
 
+Always switch to a new branch when making changes
+
+```bash
+git checkout -b <newbranchname>     # create new branch and switch
+git push -u origin <newbranchname>  # sync to remote and setup tracking
+```
+
 ## Setup guide
 
 1. Install Git Large File Storage (LFS) module https://git-lfs.github.com/
