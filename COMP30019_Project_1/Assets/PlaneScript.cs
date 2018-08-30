@@ -26,8 +26,7 @@ public class PlaneScript : MonoBehaviour
         Mesh m = new Mesh();
         m.name = "Plane";
 
-        // Define the vertices. These are the "points" in 3D space that allow us to
-        // construct 3D geometry (by connecting groups of 3 points into triangles).
+        // Define the vertices. 
         Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
         for (int i = 0, z = 0; z <= zSize; z++)
         {
@@ -38,17 +37,16 @@ public class PlaneScript : MonoBehaviour
         }
         m.vertices = vertices;
 
-        // Define the vertex colours
-        Color[] colors = new Color[(xSize + 1) * (zSize + 1)];
-        for (int i = 0; i < m.colors.Length; i++) {
-            m.colors[i] = Color.green;
+        // Define the vertex colours -- use vertex "height" for map implementation
+        Color32[] colors = new Color32[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            colors[i] = new Color32(193, 66, 66, 125);
         };
 
-        m.colors = colors;
+        m.colors32 = colors;
 
         // Automatically define the triangles based on the number of vertices
-        // Task 4: Modify this code to show the interior of the cube instead of the exterior
-        // when back-face culling is on.
         int[] triangles = new int[xSize * zSize * 6];
         for (int ti = 0, vi = 0, y = 0; y < zSize; y++, vi++)
         {
