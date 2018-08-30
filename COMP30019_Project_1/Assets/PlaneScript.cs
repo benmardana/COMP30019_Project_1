@@ -7,7 +7,7 @@ public class PlaneScript : MonoBehaviour
     // for mesh size
     public int xSize = 10;
     public int zSize = 10;
-    public float granularity = 1.0f;
+    public int granularity = 1; // multiplier for grid density, higher int means more squares
 
     // for diamond-square algorithm
     public float noise;
@@ -36,38 +36,46 @@ public class PlaneScript : MonoBehaviour
         Mesh m = new Mesh();
         m.name = "Plane";
 
-        // Diamond Square Algorithm
-        // TODO - include granularity in vertex generation
-        // TODO - implement diamond square algorithm on flat vertex array
-        Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
-        for (int i = 0, z = 0; z <= zSize; z++)
-        {
-            for (float x = 0; x <= zSize; x++, i++)
-            {
-                vertices[i] = new Vector3(x, 0.0f, z);
-            }
-        }
-        m.vertices = vertices;
+        // modify grid size with granularity modifier
+        int xs = xSize * granularity;
+        int zs = zSize * granularity;
 
-        // Define the vertex colours -- use vertex "height" for map implementation
-        Color32[] colors = new Color32[vertices.Length];
-        for (int i = 0; i < vertices.Length; i++)
+        m.vertices = GenerateVertexMap(xs, zs);
+
+        // vertex colours 
+        // use vertex "height" for map implementation when ds algo complete
+        Color32[] colors = new Color32[m.vertices.Length];
+        for (int i = 0; i < m.vertices.Length; i++)
         {
             colors[i] = new Color32(193, 66, 66, 125);
         };
 
         m.colors32 = colors;
 
-        // Automatically define the triangles based on the number of vertices
-        int[] triangles = new int[xSize * zSize * 6];
-        for (int ti = 0, vi = 0, y = 0; y < zSize; y++, vi++)
+        // Turn each quad into two triangles
+        // like the below image
+        // ______
+        // |\4  5|
+        // |1\   |
+        // |  \  |
+        // |   \3|
+        // |    \|
+        // |0___2|
+
+        // ti == triangle index
+        // vi == vertices index
+        int[] triangles = new int[xs * zs * 6];
+        for (int ti = 0, vi = 0, z = 0; z < zs; z++, vi++)
         {
-            for (int x = 0; x < xSize; x++, ti += 6, vi++)
+            for (int x = 0; x < xs; x++, ti += 6, vi++)
             {
                 triangles[ti] = vi;
-                triangles[ti + 3] = triangles[ti + 2] = vi + 1;
-                triangles[ti + 4] = triangles[ti + 1] = vi + xSize + 1;
-                triangles[ti + 5] = vi + xSize + 2;
+                triangles[ti + 1] = vi + xs + 1;
+                triangles[ti + 2] = vi + 1;
+
+                triangles[ti + 3] = vi + 1;
+                triangles[ti + 4] = vi + xs + 1;
+                triangles[ti + 5] = vi + xs + 2;
             }
         }
 
@@ -76,9 +84,20 @@ public class PlaneScript : MonoBehaviour
         return m;
     }
 
-    Vector3[] GenerateTerrain()
+    Vector3[] GenerateVertexMap(int xs, int zs)
     {
-        return new Vector3[0];
+        // Diamond Square Algorithm
+        // TODO - implement diamond square algorithm on flat vertex array
+        
+        Vector3[] flatvertices = new Vector3[(xs + 1) * (zs + 1)];
+        for (int i = 0, z = 0; z <= zs; z++)
+        {
+            for (float x = 0; x <= xs; x++, i++)
+            {
+                flatvertices[i] = new Vector3(x, 0.0f, z);
+            }
+        }
+        return flatvertices;
     }
 
     // abstract quad of vectors for diamonds and squares
