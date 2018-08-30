@@ -1,10 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PlaneScript : MonoBehaviour
 {
+    // for mesh size
     public int xSize = 10;
     public int zSize = 10;
+    public float granularity = 1.0f;
+
+    // for diamond-square algorithm
+    public float noise;
+
+    private HashSet<Square> squares = new HashSet<Square>();
+    private HashSet<Diamond> diamonds = new HashSet<Diamond>();
+
     // Use this for initialization
     void Start()
     {
@@ -26,11 +36,13 @@ public class PlaneScript : MonoBehaviour
         Mesh m = new Mesh();
         m.name = "Plane";
 
-        // Define the vertices. 
+        // Diamond Square Algorithm
+        // TODO - include granularity in vertex generation
+        // TODO - implement diamond square algorithm on flat vertex array
         Vector3[] vertices = new Vector3[(xSize + 1) * (zSize + 1)];
         for (int i = 0, z = 0; z <= zSize; z++)
         {
-            for (int x = 0; x <= zSize; x++, i++)
+            for (float x = 0; x <= zSize; x++, i++)
             {
                 vertices[i] = new Vector3(x, 0.0f, z);
             }
@@ -63,4 +75,91 @@ public class PlaneScript : MonoBehaviour
 
         return m;
     }
+
+    Vector3[] GenerateTerrain()
+    {
+        return new Vector3[0];
+    }
+
+    // abstract quad of vectors for diamonds and squares
+    abstract public class DSQuad
+    {
+        // corners of shape
+        public Vector3 a;
+        public Vector3 b;
+        public Vector3 c;
+        public Vector3 d;
+
+        // constructor
+        public DSQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+
+        // return middle
+        public abstract Vector3 Middle
+        {
+            get;
+        }
+    }
+
+    // concrete diamond class
+    public class Diamond : DSQuad
+    //      b
+    //      /\
+    //     /  \
+    //    /    \
+    //   /      \
+    //  /        \
+    // a          c
+    //  \        /
+    //   \      /
+    //    \    /
+    //     \  /
+    //      \/
+    //      d
+    {
+        public Diamond(Vector3 a, Vector3 b, Vector3 c, Vector3 d) : base(a, b, c, d)
+        {
+        }
+
+        // return middle
+        public override Vector3 Middle
+        {
+            get
+            {
+                return a + d;
+            }
+        }
+    }
+
+    // concrete square class
+    public class Square : DSQuad
+    // b------------c
+    // |            |
+    // |            |
+    // |            |
+    // |            |
+    // |            |
+    // a------------d
+    {
+        public Square(Vector3 a, Vector3 b, Vector3 c, Vector3 d) : base(a, b, c, d)
+        {
+        }
+
+        // return middle
+        public override Vector3 Middle
+        {
+            get
+            {
+                float x = Vector3.Distance(a, d) / 2;
+                float z = (Vector3.Distance(a, b) / 2);
+                return new Vector3(x, 0.0f, z);
+            }
+        }
+    }
 }
+
