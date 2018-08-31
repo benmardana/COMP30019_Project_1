@@ -12,6 +12,62 @@ public class PlaneScript : MonoBehaviour
     // for diamond-square algorithm
     public float noise;
 
+    public struct Square
+    // c------------d
+    // |            |
+    // |            |
+    // |            |
+    // |            |
+    // |            |
+    // a------------b
+    {
+        public readonly int a, b, c, d;
+
+        public Square(int a, int b, int c, int d)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+
+        public int Middle()
+        {
+            return ((d - a) / 2) + a;
+        }
+    }
+
+    public struct Diamond
+    //      c
+    //      /\
+    //     /  \
+    //    /    \
+    //   /      \
+    //  /        \
+    // a          d
+    //  \        /
+    //   \      /
+    //    \    /
+    //     \  /
+    //      \/
+    //      b
+    {
+        public readonly int a, b, c, d;
+
+        public Diamond(int a, int b, int c, int d)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+
+        public int Middle()
+        {
+            return (d - a) / 2 + a;
+        }
+    }
+
     private HashSet<Square> squares = new HashSet<Square>();
     private HashSet<Diamond> diamonds = new HashSet<Diamond>();
 
@@ -100,85 +156,5 @@ public class PlaneScript : MonoBehaviour
         return flatvertices;
     }
 
-    // abstract quad of vectors for diamonds and squares
-    abstract public class DSQuad
-    {
-        // corners of shape
-        public Vector3 a;
-        public Vector3 b;
-        public Vector3 c;
-        public Vector3 d;
-
-        // constructor
-        public DSQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
-        {
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-        }
-
-        // return middle
-        public abstract Vector3 Middle
-        {
-            get;
-        }
-    }
-
-    // concrete diamond class
-    public class Diamond : DSQuad
-    //      b
-    //      /\
-    //     /  \
-    //    /    \
-    //   /      \
-    //  /        \
-    // a          c
-    //  \        /
-    //   \      /
-    //    \    /
-    //     \  /
-    //      \/
-    //      d
-    {
-        public Diamond(Vector3 a, Vector3 b, Vector3 c, Vector3 d) : base(a, b, c, d)
-        {
-        }
-
-        // return middle
-        public override Vector3 Middle
-        {
-            get
-            {
-                return a + d;
-            }
-        }
-    }
-
-    // concrete square class
-    public class Square : DSQuad
-    // b------------c
-    // |            |
-    // |            |
-    // |            |
-    // |            |
-    // |            |
-    // a------------d
-    {
-        public Square(Vector3 a, Vector3 b, Vector3 c, Vector3 d) : base(a, b, c, d)
-        {
-        }
-
-        // return middle
-        public override Vector3 Middle
-        {
-            get
-            {
-                float x = Vector3.Distance(a, d) / 2;
-                float z = (Vector3.Distance(a, b) / 2);
-                return new Vector3(x, 0.0f, z);
-            }
-        }
-    }
 }
 
