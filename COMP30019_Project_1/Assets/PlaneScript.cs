@@ -28,7 +28,7 @@ public class PlaneScript : MonoBehaviour
 
 
         int xs, zs;
-        xs = zs = 64;
+        xs = zs = 128;
         m.vertices = GenerateVertexMap(xs, zs);
 
         // vertex colours 
@@ -36,7 +36,18 @@ public class PlaneScript : MonoBehaviour
         Color32[] colors = new Color32[m.vertices.Length];
         for (int i = 0; i < m.vertices.Length; i++)
         {
-            colors[i] = new Color32(193, 66, 66, 125);
+            if (m.vertices[i].y <= 0.5f)
+            {
+                colors[i] = new Color32(34, 139, 34, 1);
+            }
+            else if (m.vertices[i].y > 0.5f && m.vertices[i].y <= 4.0f)
+            {
+                colors[i] = new Color32(139, 69, 19, 1);
+            }
+            else
+            {
+                colors[i] = new Color(1, 1, 1, 1);
+            }
         };
 
         m.colors32 = colors;
@@ -75,14 +86,14 @@ public class PlaneScript : MonoBehaviour
 
     Vector3[] GenerateVertexMap(int xs, int zs)
     {
-        float[,] heights = PopulateDataArray(xs, 12.0f);
+        float[,] heights = PopulateDataArray(xs, 15f);
 
         Vector3[] vertices = new Vector3[(xs + 1) * (zs + 1)];
         for (int i = 0, z = 0; z <= zs; z++)
         {
             for (int x = 0; x <= xs; x++, i++)
             {
-                vertices[i] = new Vector3(x, heights[x,z], z);
+                vertices[i] = new Vector3(x, heights[x, z], z);
             }
         }
 
@@ -91,7 +102,7 @@ public class PlaneScript : MonoBehaviour
 
     private float[,] PopulateDataArray(int vertices, float roughness)
     {
-        int size = vertices+1;
+        int size = vertices + 1;
         int max = size - 1;
 
         float[,] data = new float[size, size];
@@ -103,7 +114,7 @@ public class PlaneScript : MonoBehaviour
         System.Random r = new System.Random();
 
         // set the four corner points to inital values
-        data[0, 0] = 1f;
+        data[0, 0] = 1;
         data[max, 0] = 1;
         data[0, max] = 1;
         data[max, max] = 1;
@@ -154,17 +165,16 @@ public class PlaneScript : MonoBehaviour
                     rnd = ((float)r.NextDouble() * 2.0f * h) - h;
                     val = average + rnd;
 
-                    data[x, y] = average;
+                    if (x == 0 || y == 0)
+                    {
+                        val = 1;
+                    }
 
-                    if (x == 0)
-                        data[max, y] = val;
-
-                    if (y == 0)
-                        data[x, max] = val;
+                    data[x, y] = val;
                 }
 
             }
-            h /= 2.0f;
+            h /= 1.6f;
         }
         return data;
 
