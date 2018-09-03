@@ -1,82 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class PlaneScript : MonoBehaviour
 {
-    // for mesh size
-    public int xSize = 10;
-    public int zSize = 10;
-    public int granularity = 1; // multiplier for grid density, higher int means more squares
-
-    // for diamond-square algorithm
-    public float noise;
-
-    public struct Square
-    // c------------d
-    // |            |
-    // |            |
-    // |            |
-    // |            |
-    // |            |
-    // a------------b
-    {
-        public readonly int a, b, c, d;
-
-        public Square(int a, int b, int c, int d)
-        {
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-        }
-
-        public int MiddleIndex
-        {
-        	get 
-        	{
-            	return ((d - a) / 2) + a;
-        	}
-        }
-    }
-
-    public struct Diamond
-    //      c
-    //      /\
-    //     /  \
-    //    /    \
-    //   /      \
-    //  /        \
-    // a          d
-    //  \        /
-    //   \      /
-    //    \    /
-    //     \  /
-    //      \/
-    //      b
-    {
-        public readonly int a, b, c, d;
-
-        public Diamond(int a, int b, int c, int d)
-        {
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-        }
-
-        public int MiddleIndex
-        {
-        	get 
-        	{
-            	return ((d - a) / 2) + a;
-        	}
-        }
-    }
-
-    private HashSet<Square> squaresSet = new HashSet<Square>();
-    private HashSet<Diamond> diamondsSet = new HashSet<Diamond>();
-
     // Use this for initialization
     void Start()
     {
@@ -98,10 +26,9 @@ public class PlaneScript : MonoBehaviour
         Mesh m = new Mesh();
         m.name = "Plane";
 
-        // modify grid size with granularity modifier
-        int xs = xSize * granularity;
-        int zs = zSize * granularity;
 
+        int xs, zs;
+        xs = zs = 32;
         m.vertices = GenerateVertexMap(xs, zs);
 
         // vertex colours 
@@ -148,156 +75,107 @@ public class PlaneScript : MonoBehaviour
 
     Vector3[] GenerateVertexMap(int xs, int zs)
     {
-        // Diamond Square Algorithm
-        // TODO - implement diamond square algorithm on flat vertex array
-        
+        float[,] heights = PopulateDataArray(xs, 40.0f);
+
         Vector3[] vertices = new Vector3[(xs + 1) * (zs + 1)];
         for (int i = 0, z = 0; z <= zs; z++)
         {
-            for (float x = 0; x <= xs; x++, i++)
+            for (int x = 0; x <= xs; x++, i++)
             {
-                vertices[i] = new Vector3(x, 0.0f, z);
+                vertices[i] = new Vector3(x, heights[x,z], z);
             }
         }
 
-        // create initial 'square'
-        int a = 0;
-        int d = vertices.Length - 1;
-        int b = a + (d / 4);
-        int c = d - (d / 4);
-        Square initSquare = new Square(a, b, c, d);
-
-        vertices[initSquare.a].y = 0.6f;
-        vertices[initSquare.b].y = 0.1f;
-        vertices[initSquare.c].y = 0.4f;
-        vertices[initSquare.d].y = 1.6f;
-
-        // add to 'squares'
-        squaresSet.Add(initSquare);
-
-
-        // while squares || diamonds
-        while (squaresSet.Count > 0 && diamondsSet.Count > 0)
-        {
-            // make lists of diamonds and squares to be removed after iteration
-            List<Square> squaresGC = new List<Square>();
-            List<Diamond> diamondsGC = new List<Diamond>();
-            // squares first
-            foreach (Square square in squaresSet)
-            {
-                // get average
-                Vector3 A = vertices[square.a];
-                Vector3 B = vertices[square.b];
-                Vector3 C = vertices[square.c];
-                Vector3 D = vertices[square.d];
-                float sqAvg = (A.y + B.y + C.y + D.y) / 4;
-
-                // add modifier
-                float randAvg = sqAvg + Random.Range(0.0f, 10.0f);
-
-                // set middle value of square
-                Vector3 center = vertices[square.MiddleIndex];
-                center.y = randAvg;
-                
-                // new diamonds
-                Diamond[] newDiamonds = new Diamond[4];
-                // if on the first square, use wraparound values
-                if (square.a == 0) 
-                {
-                	// up
-                    newDiamonds[0] = new Diamond(square.c, square.MiddleIndex, square.MiddleIndex, square.d);
-                	// down
-                	newDiamonds[1] = new Diamond(square.a, square.MiddleIndex, square.MiddleIndex, square.b);
-                	// left
-                	newDiamonds[2] = new Diamond(square.MiddleIndex, square.a, square.c, square.MiddleIndex);
-                	// right
-                    newDiamonds[3] = new Diamond(square.MiddleIndex, square.b, square.d, square.MiddleIndex);
-                }
-                else
-                {
-                	// up
-                    newDiamonds[0] = new Diamond(square.c, square.MiddleIndex, square.MiddleIndex + ((square.b - square.a)*xs), square.d);
-                    // down
-                    newDiamonds[1] = new Diamond(square.a, square.MiddleIndex - ((square.b - square.a)*xs), square.MiddleIndex, square.b);
-                    // left
-                    newDiamonds[2] = new Diamond(square.MiddleIndex - (square.b - square.a), square.a, square.c, square.MiddleIndex);
-                    // right
-                    newDiamonds[3] = new Diamond(square.MiddleIndex, square.b, square.d, square.MiddleIndex + (square.b - square.a));
-                }
-
-                // if possible diamond values are not already set
-                foreach (Diamond diamond in newDiamonds) 
-                {
-                    // if not set
-                    if (vertices[diamond.MiddleIndex].y != 0.0f)
-                    {
-                        // add to diamonds array
-                        diamondsSet.Add(diamond);
-                    }
-                }
-
-                // add square to squaresGC
-                squaresGC.Add(square);
-            }
-
-            // then diamonds
-            foreach (Diamond diamond in diamondsSet)
-            {
-                // get average
-                Vector3 A = vertices[diamond.a];
-                Vector3 B = vertices[diamond.b];
-                Vector3 C = vertices[diamond.c];
-                Vector3 D = vertices[diamond.d];
-                float sqAvg = (A.y + B.y + C.y + D.y) / 4;
-
-                // add modifier
-                float randAvg = sqAvg + Random.Range(0.0f, 10.0f);
-
-                // set middle value of diamonds
-                Vector3 center = vertices[diamond.MiddleIndex];
-                center.y = randAvg;
-                
-                // new squares
-                Square[] newSquares = new Square[4];
-
-
-                Square topL = new Square(diamond.a, diamond.MiddleIndex, diamond.a + ((diamond.c - diamond.b)/2), diamond.c);
-                Square topR = new Square(diamond.MiddleIndex, diamond.d, diamond.c, diamond.d + ((diamond.c - diamond.b)/2));
-                Square botL = new Square(diamond.a - ((diamond.c - diamond.b)/2), diamond.b, diamond.a, diamond.MiddleIndex);
-                Square botR = new Square(diamond.b, diamond.d - ((diamond.c - diamond.b)/2), diamond.MiddleIndex, diamond.d);
-
-                newSquares[0] = topL;
-                newSquares[1] = topR;
-                newSquares[2] = botL;
-                newSquares[3] = botR;
-
-                // if possible diamond values are not already set
-                foreach (Square square in newSquares) 
-                {
-                    // if not set
-                    if (vertices[square.MiddleIndex].y != 0.0f)
-                    {
-                        // add to diamonds hashset
-                        squaresSet.Add(square);
-                    }
-                }
-
-                // add square to squaresGC
-                diamondsGC.Add(diamond);
-            }
-
-            //remove squaresGC and diamondsGC from squaresSet and diamondsSet
-            foreach (Square square in squaresGC)
-            {
-                squaresSet.Remove(square);
-            }
-
-            foreach (Diamond diamond in diamondsGC)
-            {
-                diamondsSet.Remove(diamond);
-            }
-        }
-
-    return vertices;
+        return vertices;
     }
+
+    private float[,] PopulateDataArray(int vertices, float roughness)
+    {
+        int size = vertices+1;
+        int max = size - 1;
+
+        float[,] data = new float[size, size];
+        float val, rnd;
+        float h = 0.5f * roughness;
+
+        System.Random r = new System.Random();
+
+        int x, y, sideLength, halfSide = 0;
+
+
+        // set the four corner points to inital values
+        data[0, 0] = 1;
+        data[max, 0] = 1;
+        data[0, max] = 1;
+        data[max, max] = 1;
+
+
+        for (sideLength = max; sideLength >= 2; sideLength /= 2)
+        {
+
+            halfSide = sideLength / 2;
+
+
+            for (x = 0; x < max; x += sideLength)
+            {
+
+
+                for (y = 0; y < max; y += sideLength)
+                {
+
+
+
+                    float average = getAverage(data[x, y],
+                        data[x + sideLength, y], data[x, y + sideLength],
+                        data[x + sideLength, y + sideLength]);
+
+                    // add random
+                    rnd = ((float)r.NextDouble() * 2.0f * h) - h;
+                    val = Mathf.Clamp01(average + rnd);
+
+                    data[x + halfSide, y + halfSide] = val;
+                }
+
+            }
+
+            //diamond values
+            for (x = 0; x < max; x += halfSide)
+            {
+
+
+                for (y = (x + halfSide) % sideLength; y < max; y += sideLength)
+                {
+
+
+                    float average = getAverage(data[(x - halfSide + max) % (max), y],
+                                        data[(x + halfSide) % (max), y], data[x, (y + halfSide) % (max)],
+                                        data[x, (y - halfSide + max) % (max)]);
+
+                    // add random
+                    rnd = ((float)r.NextDouble() * 2.0f * h) - h;
+                    val = Mathf.Clamp01(average + rnd);
+
+                    data[x, y] = average;
+
+                    if (x == 0)
+                        data[max, y] = val;
+
+                    if (y == 0)
+                        data[x, max] = val;
+                }
+
+            }
+            h /= 2.0f;
+        }
+        return data;
+
+    }
+
+    // get the average for the four values
+    private float getAverage(float a, float b, float c, float d)
+    {
+        return (a + b + c + d) / 4.0f;
+    }
+
+
 }
