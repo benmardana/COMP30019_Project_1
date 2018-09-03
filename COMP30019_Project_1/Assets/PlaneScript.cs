@@ -170,12 +170,4 @@ public class PlaneScript : MonoBehaviour
         return data;
 
     }
-
-    // get the average for the four values
-    private float getAverage(float a, float b, float c, float d)
-    {
-        return (a + b + c + d) / 4.0f;
-    }
-
-
 }
