@@ -69,7 +69,7 @@ public class PlaneScript : MonoBehaviour
         {
         	get 
         	{
-            	return ((d - a) / 2) + a;
+            	return ((c - b) / 2) + b;
         	}
         }
     }
@@ -163,21 +163,22 @@ public class PlaneScript : MonoBehaviour
         // create initial 'square'
         int a = 0;
         int d = vertices.Length - 1;
-        int b = a + (d / 4);
-        int c = d - (d / 4);
+        int b = a + xs;
+        int c = d - xs;
         Square initSquare = new Square(a, b, c, d);
 
-        vertices[initSquare.a].y = 0.6f;
-        vertices[initSquare.b].y = 0.1f;
-        vertices[initSquare.c].y = 0.4f;
-        vertices[initSquare.d].y = 1.6f;
+        vertices[initSquare.a].y = 2.0f;
+        vertices[initSquare.b].y = 1.5f;
+        vertices[initSquare.c].y = 1.0f;
+        vertices[initSquare.d].y = 0.5f;
 
         // add to 'squares'
         squaresSet.Add(initSquare);
-
+        Debug.Log(squaresSet.Count);
+        Debug.Log(diamondsSet.Count);
 
         // while squares || diamonds
-        while (squaresSet.Count > 0 && diamondsSet.Count > 0)
+        while ((squaresSet.Count > 0) || (diamondsSet.Count > 0))
         {
             // make lists of diamonds and squares to be removed after iteration
             List<Square> squaresGC = new List<Square>();
@@ -193,12 +194,15 @@ public class PlaneScript : MonoBehaviour
                 float sqAvg = (A.y + B.y + C.y + D.y) / 4;
 
                 // add modifier
-                float randAvg = sqAvg + Random.Range(0.0f, 10.0f);
+                float randAvg = sqAvg + Random.Range(0.0f, 5.0f);
 
                 // set middle value of square
-                Vector3 center = vertices[square.MiddleIndex];
-                center.y = randAvg;
-                
+                vertices[square.MiddleIndex].y = randAvg;
+                Debug.Log("Setting square at ");
+                Debug.Log(square.MiddleIndex);
+                Debug.Log("with value ");
+                Debug.Log(randAvg);
+
                 // new diamonds
                 Diamond[] newDiamonds = new Diamond[4];
                 // if on the first square, use wraparound values
@@ -229,7 +233,9 @@ public class PlaneScript : MonoBehaviour
                 foreach (Diamond diamond in newDiamonds) 
                 {
                     // if not set
-                    if (vertices[diamond.MiddleIndex].y != 0.0f)
+                    Debug.Log("adding diamond");
+                	Debug.Log(diamond.MiddleIndex);
+                    if (vertices[diamond.MiddleIndex].y == 0.0f)
                     {
                         // add to diamonds array
                         diamondsSet.Add(diamond);
@@ -251,31 +257,33 @@ public class PlaneScript : MonoBehaviour
                 float sqAvg = (A.y + B.y + C.y + D.y) / 4;
 
                 // add modifier
-                float randAvg = sqAvg + Random.Range(0.0f, 10.0f);
+                float randAvg = sqAvg + Random.Range(0.0f, 5.0f);
 
-                // set middle value of diamonds
-                Vector3 center = vertices[diamond.MiddleIndex];
-                center.y = randAvg;
+                // set middle value of diamond
+                vertices[diamond.MiddleIndex].y = randAvg;
+                Debug.Log("Setting diamond at ");
+                Debug.Log(diamond.MiddleIndex);
+                Debug.Log("with value ");
+                Debug.Log(randAvg);
                 
                 // new squares
                 Square[] newSquares = new Square[4];
 
+                // topL
+                newSquares[0] = new Square(diamond.a, diamond.MiddleIndex, diamond.a + ((diamond.c - diamond.b)/2), diamond.c);
+                // topR
+                newSquares[1] = new Square(diamond.MiddleIndex, diamond.d, diamond.c, diamond.d + ((diamond.c - diamond.b)/2));
+                // botL
+                newSquares[2] = new Square(diamond.a - ((diamond.c - diamond.b)/2), diamond.b, diamond.a, diamond.MiddleIndex);
+                // botR
+                newSquares[3] = new Square(diamond.b, diamond.d - ((diamond.c - diamond.b)/2), diamond.MiddleIndex, diamond.d);
 
-                Square topL = new Square(diamond.a, diamond.MiddleIndex, diamond.a + ((diamond.c - diamond.b)/2), diamond.c);
-                Square topR = new Square(diamond.MiddleIndex, diamond.d, diamond.c, diamond.d + ((diamond.c - diamond.b)/2));
-                Square botL = new Square(diamond.a - ((diamond.c - diamond.b)/2), diamond.b, diamond.a, diamond.MiddleIndex);
-                Square botR = new Square(diamond.b, diamond.d - ((diamond.c - diamond.b)/2), diamond.MiddleIndex, diamond.d);
-
-                newSquares[0] = topL;
-                newSquares[1] = topR;
-                newSquares[2] = botL;
-                newSquares[3] = botR;
 
                 // if possible diamond values are not already set
                 foreach (Square square in newSquares) 
                 {
                     // if not set
-                    if (vertices[square.MiddleIndex].y != 0.0f)
+                    if (vertices[square.MiddleIndex].y == 0.0f)
                     {
                         // add to diamonds hashset
                         squaresSet.Add(square);
