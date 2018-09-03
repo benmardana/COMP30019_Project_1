@@ -28,7 +28,7 @@ public class PlaneScript : MonoBehaviour
 
 
         int xs, zs;
-        xs = zs = 32;
+        xs = zs = 64;
         m.vertices = GenerateVertexMap(xs, zs);
 
         // vertex colours 
@@ -75,7 +75,7 @@ public class PlaneScript : MonoBehaviour
 
     Vector3[] GenerateVertexMap(int xs, int zs)
     {
-        float[,] heights = PopulateDataArray(xs, 40.0f);
+        float[,] heights = PopulateDataArray(xs, 12.0f);
 
         Vector3[] vertices = new Vector3[(xs + 1) * (zs + 1)];
         for (int i = 0, z = 0; z <= zs; z++)
@@ -96,15 +96,14 @@ public class PlaneScript : MonoBehaviour
 
         float[,] data = new float[size, size];
         float val, rnd;
-        float h = 0.5f * roughness;
-
-        System.Random r = new System.Random();
+        float h = roughness;
 
         int x, y, sideLength, halfSide = 0;
 
+        System.Random r = new System.Random();
 
         // set the four corner points to inital values
-        data[0, 0] = 1;
+        data[0, 0] = 1f;
         data[max, 0] = 1;
         data[0, max] = 1;
         data[max, max] = 1;
@@ -131,7 +130,7 @@ public class PlaneScript : MonoBehaviour
 
                     // add random
                     rnd = ((float)r.NextDouble() * 2.0f * h) - h;
-                    val = Mathf.Clamp01(average + rnd);
+                    val = average + rnd;
 
                     data[x + halfSide, y + halfSide] = val;
                 }
@@ -153,7 +152,7 @@ public class PlaneScript : MonoBehaviour
 
                     // add random
                     rnd = ((float)r.NextDouble() * 2.0f * h) - h;
-                    val = Mathf.Clamp01(average + rnd);
+                    val = average + rnd;
 
                     data[x, y] = average;
 
@@ -170,4 +169,14 @@ public class PlaneScript : MonoBehaviour
         return data;
 
     }
+
+    // get the average for the four values
+    private float getAverage(float a, float b, float c, float d)
+    {
+        return (a + b + c + d) / 4.0f;
+    }
+
+
 }
+
+
