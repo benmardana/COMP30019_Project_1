@@ -31,9 +31,12 @@ public class PlaneScript : MonoBehaviour
             this.d = d;
         }
 
-        public int Middle()
+        public int MiddleIndex
         {
-            return ((d - a) / 2) + a;
+        	get 
+        	{
+            	return ((d - a) / 2) + a;
+        	}
         }
     }
 
@@ -62,14 +65,17 @@ public class PlaneScript : MonoBehaviour
             this.d = d;
         }
 
-        public int Middle()
+        public int MiddleIndex
         {
-            return (d - a) / 2 + a;
+        	get 
+        	{
+            	return ((d - a) / 2) + a;
+        	}
         }
     }
 
-    private HashSet<Square> squares = new HashSet<Square>();
-    private HashSet<Diamond> diamonds = new HashSet<Diamond>();
+    private HashSet<Square> squaresSet = new HashSet<Square>();
+    private HashSet<Diamond> diamondsSet = new HashSet<Diamond>();
 
     // Use this for initialization
     void Start()
@@ -145,16 +151,153 @@ public class PlaneScript : MonoBehaviour
         // Diamond Square Algorithm
         // TODO - implement diamond square algorithm on flat vertex array
         
-        Vector3[] flatvertices = new Vector3[(xs + 1) * (zs + 1)];
+        Vector3[] vertices = new Vector3[(xs + 1) * (zs + 1)];
         for (int i = 0, z = 0; z <= zs; z++)
         {
             for (float x = 0; x <= xs; x++, i++)
             {
-                flatvertices[i] = new Vector3(x, 0.0f, z);
+                vertices[i] = new Vector3(x, 0.0f, z);
             }
         }
-        return flatvertices;
+
+        // create initial 'square'
+        int a = 0;
+        int d = vertices.Length - 1;
+        int b = a + (d / 4);
+        int c = d - (d / 4);
+        Square initSquare = new Square(a, b, c, d);
+
+        vertices[initSquare.a].y = 0.6f;
+        vertices[initSquare.b].y = 0.1f;
+        vertices[initSquare.c].y = 0.4f;
+        vertices[initSquare.d].y = 1.6f;
+
+        // add to 'squares'
+        squaresSet.Add(initSquare);
+
+
+        // while squares || diamonds
+        while (squaresSet.Count > 0 && diamondsSet.Count > 0)
+        {
+            // make lists of diamonds and squares to be removed after iteration
+            List<Square> squaresGC = new List<Square>();
+            List<Diamond> diamondsGC = new List<Diamond>();
+            // squares first
+            foreach (Square square in squaresSet)
+            {
+                // get average
+                Vector3 A = vertices[square.a];
+                Vector3 B = vertices[square.b];
+                Vector3 C = vertices[square.c];
+                Vector3 D = vertices[square.d];
+                float sqAvg = (A.y + B.y + C.y + D.y) / 4;
+
+                // add modifier
+                float randAvg = sqAvg + Random.Range(0.0f, 10.0f);
+
+                // set middle value of square
+                Vector3 center = vertices[square.MiddleIndex];
+                center.y = randAvg;
+                
+                // new diamonds
+                Diamond[] newDiamonds = new Diamond[4];
+                // if on the first square, use wraparound values
+                if (square.a == 0) 
+                {
+                	// up
+                    newDiamonds[0] = new Diamond(square.c, square.MiddleIndex, square.MiddleIndex, square.d);
+                	// down
+                	newDiamonds[1] = new Diamond(square.a, square.MiddleIndex, square.MiddleIndex, square.b);
+                	// left
+                	newDiamonds[2] = new Diamond(square.MiddleIndex, square.a, square.c, square.MiddleIndex);
+                	// right
+                    newDiamonds[3] = new Diamond(square.MiddleIndex, square.b, square.d, square.MiddleIndex);
+                }
+                else
+                {
+                	// up
+                    newDiamonds[0] = new Diamond(square.c, square.MiddleIndex, square.MiddleIndex + ((square.b - square.a)*xs), square.d);
+                    // down
+                    newDiamonds[1] = new Diamond(square.a, square.MiddleIndex - ((square.b - square.a)*xs), square.MiddleIndex, square.b);
+                    // left
+                    newDiamonds[2] = new Diamond(square.MiddleIndex - (square.b - square.a), square.a, square.c, square.MiddleIndex);
+                    // right
+                    newDiamonds[3] = new Diamond(square.MiddleIndex, square.b, square.d, square.MiddleIndex + (square.b - square.a));
+                }
+
+                // if possible diamond values are not already set
+                foreach (Diamond diamond in newDiamonds) 
+                {
+                    // if not set
+                    if (vertices[diamond.MiddleIndex].y != 0.0f)
+                    {
+                        // add to diamonds array
+                        diamondsSet.Add(diamond);
+                    }
+                }
+
+                // add square to squaresGC
+                squaresGC.Add(square);
+            }
+
+            // then diamonds
+            foreach (Diamond diamond in diamondsSet)
+            {
+                // get average
+                Vector3 A = vertices[diamond.a];
+                Vector3 B = vertices[diamond.b];
+                Vector3 C = vertices[diamond.c];
+                Vector3 D = vertices[diamond.d];
+                float sqAvg = (A.y + B.y + C.y + D.y) / 4;
+
+                // add modifier
+                float randAvg = sqAvg + Random.Range(0.0f, 10.0f);
+
+                // set middle value of diamonds
+                Vector3 center = vertices[diamond.MiddleIndex];
+                center.y = randAvg;
+                
+                // new squares
+                Square[] newSquares = new Square[4];
+
+
+                Square topL = new Square(diamond.a, diamond.MiddleIndex, diamond.a + ((diamond.c - diamond.b)/2), diamond.c);
+                Square topR = new Square(diamond.MiddleIndex, diamond.d, diamond.c, diamond.d + ((diamond.c - diamond.b)/2));
+                Square botL = new Square(diamond.a - ((diamond.c - diamond.b)/2), diamond.b, diamond.a, diamond.MiddleIndex);
+                Square botR = new Square(diamond.b, diamond.d - ((diamond.c - diamond.b)/2), diamond.MiddleIndex, diamond.d);
+
+                newSquares[0] = topL;
+                newSquares[1] = topR;
+                newSquares[2] = botL;
+                newSquares[3] = botR;
+
+                // if possible diamond values are not already set
+                foreach (Square square in newSquares) 
+                {
+                    // if not set
+                    if (vertices[square.MiddleIndex].y != 0.0f)
+                    {
+                        // add to diamonds hashset
+                        squaresSet.Add(square);
+                    }
+                }
+
+                // add square to squaresGC
+                diamondsGC.Add(diamond);
+            }
+
+            //remove squaresGC and diamondsGC from squaresSet and diamondsSet
+            foreach (Square square in squaresGC)
+            {
+                squaresSet.Remove(square);
+            }
+
+            foreach (Diamond diamond in diamondsGC)
+            {
+                diamondsSet.Remove(diamond);
+            }
+        }
+
+    return vertices;
     }
-
 }
-
