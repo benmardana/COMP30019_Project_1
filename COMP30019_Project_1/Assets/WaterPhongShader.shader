@@ -1,6 +1,6 @@
-// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Unlit/PhongShader"
+Shader "Unlit/WaterPhongShader"
 {
 	SubShader
 	{
@@ -64,11 +64,10 @@ Shader "Unlit/PhongShader"
 
 				// Calculate specular reflections
 				float Ks = 1;
-				float specN = 1; // Values>>1 give tighter highlights
+				float specN = 50; // Values>>1 give tighter highlights
 				float3 V = normalize(_WorldSpaceCameraPos.xyz - o.worldVertex.xyz);
 
 				// Using classic reflection calculation
-				// good for mountains
 				float3 R = normalize((2.0 * LdotN * interpNormal) - L);
 				float3 spe = fAtt * _LightColor.rgb * Ks * pow(saturate(dot(V, R)), specN);
 

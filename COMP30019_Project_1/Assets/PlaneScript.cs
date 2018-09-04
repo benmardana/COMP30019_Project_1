@@ -6,15 +6,20 @@ using System;
 public class PlaneScript : MonoBehaviour
 {
 	int xs = 64, zs = 64;
-    float roughness = 30.0f;
+    float roughness = 10.0f;
     float edgeHeight = 5.0f;
     float snowPerc = 0.9f;
     float rockPerc = 0.7f;
     float grassPerc = 0.4f;
     float sandPerc = 0.3f;
 
+    GameObject referenceObject;
+    WaterScript referenceScript;
+
     void Start()
     {
+        transform.position = Vector3.zero;
+
         MeshFilter cubeMesh = this.gameObject.AddComponent<MeshFilter>();
         Mesh mesh = cubeMesh.mesh;
         updateMesh(mesh);
@@ -51,6 +56,11 @@ public class PlaneScript : MonoBehaviour
         mesh.vertices = vertices;
         mesh.colors32 = colors;
         mesh.triangles = triangles;
+
+        // set normals
+        mesh.RecalculateNormals();
+
+
     }
 
     Vector3[] GenerateVertexMap(int xs, int zs, float roughness)
@@ -72,7 +82,8 @@ public class PlaneScript : MonoBehaviour
 
     Color32[] ApplyColors(Vector3[] vertices)
     {
-        // to do - set variables for height externally
+
+        // set color bands as percentages of total height
         Color32[] colors = new Color32[vertices.Length];
         float[] maxAndMin = getMaxAndMin(vertices);
         float max = maxAndMin[0];
@@ -83,6 +94,7 @@ public class PlaneScript : MonoBehaviour
         float rockHeight = diff * rockPerc + min;
         float grassHeight = diff * grassPerc + min;
         float sandHeight = diff * sandPerc + min;
+        float waterHeight = grassHeight - ((grassHeight - sandHeight) * 0.6f);
 
         for (int i = 0; i < vertices.Length; i++)
         {
@@ -112,6 +124,11 @@ public class PlaneScript : MonoBehaviour
                 colors[i] = new Color32(255, 255, 255, 255);
             }
         };
+
+        // update the water now
+        referenceObject = GameObject.Find("Water");
+        referenceScript = referenceObject.GetComponent<WaterScript>();
+        referenceScript.setWaterHeight(xs, waterHeight);
 
         return colors;
     }

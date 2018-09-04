@@ -9,12 +9,10 @@ public class CameraScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		// hides cursor - ESC to show again
-		Cursor.lockState = CursorLockMode.Locked;
 	}
 	
 	// Update is called once per frame
     void Update() {
-    	Debug.Log(yaw);
         float impulse = Input.GetAxis("Vertical") * speed;
         float slide = Input.GetAxis("Horizontal") * speed;
         float yaw = Input.GetAxis("Mouse X") * rotationSpeed;

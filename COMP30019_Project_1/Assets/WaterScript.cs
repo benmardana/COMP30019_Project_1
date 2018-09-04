@@ -5,32 +5,34 @@ using UnityEngine;
 public class WaterScript : MonoBehaviour
 {
 
-    void Start()
+    // replaces start - called by PlaneScript
+    public void setWaterHeight(int size, float height)
     {
-        MeshFilter cubeMesh = this.gameObject.AddComponent<MeshFilter>();
-        Mesh mesh = cubeMesh.mesh;
-        updateMesh(mesh);
+        transform.position = Vector3.zero;
 
-        // Add a MeshRenderer component. This component actually renders the mesh that
-        // is defined by the MeshFilter component.
-        MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
-        renderer.material.shader = Shader.Find("Unlit/PhongShader");
-    }
 
-    void Update()
-    {
-        // pressing space in game mode will generate a new world
-        if (Input.GetKeyDown("space"))
+        if (this.gameObject.GetComponent<MeshFilter>() == null)
         {
-            Mesh mesh = GetComponent<MeshFilter>().mesh;
-            updateMesh(mesh);
+            MeshFilter cubeMesh = this.gameObject.AddComponent<MeshFilter>();
+            Mesh mesh = cubeMesh.mesh;
+            updateMesh(mesh, size, height);
+        }
+        else
+        {
+            MeshFilter cubeMesh = this.gameObject.GetComponent<MeshFilter>();
+            Mesh mesh = cubeMesh.mesh;
+            updateMesh(mesh, size, height);
+        }
+
+        if (this.gameObject.GetComponent<MeshRenderer>() == null)
+        {
+            MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
+            renderer.material.shader = Shader.Find("Unlit/WaterPhongShader");
         }
     }
 
-    void updateMesh(Mesh mesh)
+    void updateMesh(Mesh mesh, int dimension, float height)
     {
-
-        int dimension = 64;
 
         // transform 2D array into 1D array of vertices
         Vector3[] vertices = new Vector3[(dimension + 1) * (dimension + 1)];
@@ -39,8 +41,8 @@ public class WaterScript : MonoBehaviour
         {
             for (int x = 0; x <= dimension; x++, i++)
             {
-                vertices[i] = new Vector3(x, 4.0f, z);
-                colors[i] = new Color32(64, 164, 223,1);
+                vertices[i] = new Vector3(x, height, z);
+                colors[i] = new Color32(64, 164, 223,20);
             }
         }
 
@@ -74,6 +76,7 @@ public class WaterScript : MonoBehaviour
             }
         }
         mesh.triangles = triangles;
+        mesh.RecalculateNormals();
 
     }
 }

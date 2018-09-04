@@ -14,7 +14,6 @@ public class LightScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		// update location and give to shaders
-		Vector4 lightLoc = new Vector4(this.transform.position.x, this.transform.position.y, this.transform.position.z, 1);
-		Shader.SetGlobalVector("_LightPosition", lightLoc);
+		Shader.SetGlobalVector("_LightPosition", transform.position);
 	}
 }
