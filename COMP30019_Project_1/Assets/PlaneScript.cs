@@ -5,7 +5,7 @@ using System;
 
 public class PlaneScript : MonoBehaviour
 {
-	int xs = 64, zs = 64;
+    public int sideSize = 64;
     float roughness = 10.0f;
     float edgeHeight = 5.0f;
     float snowPerc = 0.9f;
@@ -18,7 +18,6 @@ public class PlaneScript : MonoBehaviour
 
     void Start()
     {
-        transform.position = Vector3.zero;
 
         MeshFilter cubeMesh = this.gameObject.AddComponent<MeshFilter>();
         Mesh mesh = cubeMesh.mesh;
@@ -26,8 +25,10 @@ public class PlaneScript : MonoBehaviour
 
         // Add a MeshRenderer component. This component actually renders the mesh that
         // is defined by the MeshFilter component.
-        MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
-        renderer.material.shader = Shader.Find("Unlit/PhongShader");
+        MeshRenderer rend = this.gameObject.AddComponent<MeshRenderer>();
+        rend.material.shader = Shader.Find("PhongShader");
+        
+        transform.position = Vector3.zero;
     }
 
     void Update()
@@ -48,7 +49,7 @@ public class PlaneScript : MonoBehaviour
         int[] triangles = mesh.triangles;
 
         // set values
-        vertices = GenerateVertexMap(xs, zs, roughness);
+        vertices = GenerateVertexMap(sideSize, roughness);
         colors = ApplyColors(vertices);
         triangles = GenerateTriangles(vertices);
 
@@ -63,16 +64,16 @@ public class PlaneScript : MonoBehaviour
 
     }
 
-    Vector3[] GenerateVertexMap(int xs, int zs, float roughness)
+    Vector3[] GenerateVertexMap(int sideSize, float roughness)
     {
         // generate 2D height array using diamond square algorithm
-        float[,] heights = GenerateHeightMap(xs, roughness);
+        float[,] heights = GenerateHeightMap(sideSize, roughness);
 
         // transform 2D array into 1D array of vertices
-        Vector3[] vertices = new Vector3[(xs + 1) * (zs + 1)];
-        for (int i = 0, z = 0; z <= zs; z++)
+        Vector3[] vertices = new Vector3[(sideSize + 1) * (sideSize + 1)];
+        for (int i = 0, z = 0; z <= sideSize; z++)
         {
-            for (int x = 0; x <= xs; x++, i++)
+            for (int x = 0; x <= sideSize; x++, i++)
             {
                 vertices[i] = new Vector3(x, heights[x, z], z);
             }
@@ -128,7 +129,7 @@ public class PlaneScript : MonoBehaviour
         // update the water now
         referenceObject = GameObject.Find("Water");
         referenceScript = referenceObject.GetComponent<WaterScript>();
-        referenceScript.setWaterHeight(xs, waterHeight);
+        referenceScript.setWaterHeight(sideSize, waterHeight);
 
         return colors;
     }
@@ -148,17 +149,17 @@ public class PlaneScript : MonoBehaviour
         // ti == triangle index
         // vi == vertices index
         int[] triangles = new int[vertices.Length * 6];
-        for (int ti = 0, vi = 0, z = 0; z < zs; z++, vi++)
+        for (int ti = 0, vi = 0, z = 0; z < sideSize; z++, vi++)
         {
-            for (int x = 0; x < xs; x++, ti += 6, vi++)
+            for (int x = 0; x < sideSize; x++, ti += 6, vi++)
             {
                 triangles[ti] = vi;
-                triangles[ti + 1] = vi + xs + 1;
+                triangles[ti + 1] = vi + sideSize + 1;
                 triangles[ti + 2] = vi + 1;
 
                 triangles[ti + 3] = vi + 1;
-                triangles[ti + 4] = vi + xs + 1;
-                triangles[ti + 5] = vi + xs + 2;
+                triangles[ti + 4] = vi + sideSize + 1;
+                triangles[ti + 5] = vi + sideSize + 2;
             }
         }
 

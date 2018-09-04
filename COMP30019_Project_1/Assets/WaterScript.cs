@@ -5,6 +5,9 @@ using UnityEngine;
 public class WaterScript : MonoBehaviour
 {
 
+    void Start()
+    {}
+
     // replaces start - called by PlaneScript
     public void setWaterHeight(int size, float height)
     {
@@ -27,7 +30,12 @@ public class WaterScript : MonoBehaviour
         if (this.gameObject.GetComponent<MeshRenderer>() == null)
         {
             MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
-            renderer.material.shader = Shader.Find("Unlit/WaterPhongShader");
+            renderer.material.shader = Shader.Find("WaterPhongShader");
+        }
+        else 
+        {
+            MeshRenderer renderer = this.gameObject.GetComponent<MeshRenderer>();
+            renderer.material.shader = Shader.Find("WaterPhongShader");
         }
     }
 

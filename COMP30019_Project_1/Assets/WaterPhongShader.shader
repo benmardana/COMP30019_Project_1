@@ -1,13 +1,12 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Unlit/WaterPhongShader"
+Shader "WaterPhongShader"
 {
 	SubShader
 	{
 
 		Pass
 		{
-			Tags { "LightMode" = "ForwardBase" }
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -20,7 +19,7 @@ Shader "Unlit/WaterPhongShader"
 			struct vertIn
 			{
 				float4 vertex : POSITION;
-				float4 normal : NORMAL;
+				float3 normal : NORMAL;
 				float4 color : COLOR;
 			};
 
@@ -39,14 +38,14 @@ Shader "Unlit/WaterPhongShader"
 				o.vertex = UnityObjectToClipPos(i.vertex);
 				o.worldVertex = mul(unity_ObjectToWorld, i.vertex);
 
-				o.worldNormal = normalize(mul(transpose((float3x3)unity_WorldToObject), i.normal.xyz));
+				o.worldNormal = UnityObjectToWorldNormal(i.normal);
 
 				o.color = i.color;
 				
 				return o;
 			}
 			
-			fixed4 frag (vertOut o) : SV_Target
+			float4 frag (vertOut o) : SV_Target
 			{
 				float3 interpNormal = normalize(o.worldNormal);
 
@@ -58,7 +57,7 @@ Shader "Unlit/WaterPhongShader"
 				// (when calculating the reflected ray in our specular component)
 				float fAtt = 0.001;
 				float Kd = 1;
-				float3 L = normalize(_LightPosition - o.worldVertex.xyz);
+				float3 L = normalize(_LightPosition.xyz - o.worldVertex.xyz);
 				float LdotN = dot(L, interpNormal);
 				float3 dif = fAtt * _LightColor.rgb * Kd * o.color.rgb * saturate(LdotN);
 
@@ -71,7 +70,7 @@ Shader "Unlit/WaterPhongShader"
 				float3 R = normalize((2.0 * LdotN * interpNormal) - L);
 				float3 spe = fAtt * _LightColor.rgb * Ks * pow(saturate(dot(V, R)), specN);
 
-				float4 returnColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+				fixed4 returnColor = fixed4(0.0f, 0.0f, 0.0f, 0.0f);
 				returnColor.rgb = amb.rgb + dif.rgb + spe.rgb;
 				returnColor.a = o.color.a;
 
