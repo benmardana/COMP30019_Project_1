@@ -1,10 +1,12 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
 
 public class PlaneScript : MonoBehaviour
 {
+	int xs = 64, zs = 64;
+
     // Use this for initialization
     void Start()
     {
@@ -20,15 +22,24 @@ public class PlaneScript : MonoBehaviour
         renderer.material.shader = Shader.Find("Unlit/VertexColorShader");
     }
 
+    void Update()
+    {
+    	// pressing space in game mode will generate a new world
+    	if (Input.GetKeyDown("space"))
+    	{
+    		Mesh mesh = GetComponent<MeshFilter>().mesh;
+    		Vector3[] vertices = mesh.vertices;
+    		vertices = GenerateVertexMap(xs, zs);
+    		mesh.vertices = vertices;
+    	}
+    }
+
     // Method to create a cube mesh with coloured vertices
     Mesh CreatePlaneMesh()
     {
         Mesh m = new Mesh();
         m.name = "Plane";
-
-
-        int xs, zs;
-        xs = zs = 128;
+        
         m.vertices = GenerateVertexMap(xs, zs);
 
         // vertex colours 
@@ -86,7 +97,7 @@ public class PlaneScript : MonoBehaviour
 
     Vector3[] GenerateVertexMap(int xs, int zs)
     {
-        float[,] heights = PopulateDataArray(xs, 15f);
+        float[,] heights = PopulateDataArray(xs, 30f);
 
         Vector3[] vertices = new Vector3[(xs + 1) * (zs + 1)];
         for (int i = 0, z = 0; z <= zs; z++)
@@ -114,10 +125,10 @@ public class PlaneScript : MonoBehaviour
         System.Random r = new System.Random();
 
         // set the four corner points to inital values
-        data[0, 0] = 1;
-        data[max, 0] = 1;
-        data[0, max] = 1;
-        data[max, max] = 1;
+        data[0, 0] = 5;
+        data[max, 0] = 5;
+        data[0, max] = 5;
+        data[max, max] = 5;
 
 
         for (sideLength = max; sideLength >= 2; sideLength /= 2)
@@ -143,6 +154,20 @@ public class PlaneScript : MonoBehaviour
                     rnd = ((float)r.NextDouble() * 2.0f * h) - h;
                     val = average + rnd;
 
+                    if (x == 0 || y == 0)
+                    {
+                        val = 5;
+                    }
+
+                    if (x == 0)
+                    {
+                    	data[max, y] = val;
+                    }
+                    if (y == 0)
+                    {
+                    	data[x, max] = val;
+                    }
+
                     data[x + halfSide, y + halfSide] = val;
                 }
 
@@ -167,14 +192,24 @@ public class PlaneScript : MonoBehaviour
 
                     if (x == 0 || y == 0)
                     {
-                        val = 1;
+                        val = 5;
                     }
+
+                    if (x == 0)
+                    {
+                    	data[max, y] = val;
+                    }
+                    if (y == 0)
+                    {
+                    	data[x, max] = val;
+                    }
+
 
                     data[x, y] = val;
                 }
 
             }
-            h /= 1.6f;
+            h /= 2.0f;
         }
         return data;
 
