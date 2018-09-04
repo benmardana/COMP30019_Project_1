@@ -6,15 +6,18 @@ using System;
 public class PlaneScript : MonoBehaviour
 {
 	int xs = 64, zs = 64;
+    float roughness = 30.0f;
+    float edgeHeight = 5.0f;
+    float snowPerc = 0.9f;
+    float rockPerc = 0.7f;
+    float grassPerc = 0.4f;
+    float sandPerc = 0.3f;
 
-    // Use this for initialization
     void Start()
     {
-        // Add a MeshFilter component to this entity. This essentially comprises of a
-        // mesh definition, which in this example is a collection of vertices, colours 
-        // and triangles (groups of three vertices). 
         MeshFilter cubeMesh = this.gameObject.AddComponent<MeshFilter>();
-        cubeMesh.mesh = this.CreatePlaneMesh();
+        Mesh mesh = cubeMesh.mesh;
+        updateMesh(mesh);
 
         // Add a MeshRenderer component. This component actually renders the mesh that
         // is defined by the MeshFilter component.
@@ -24,47 +27,99 @@ public class PlaneScript : MonoBehaviour
 
     void Update()
     {
-    	// pressing space in game mode will generate a new world
-    	if (Input.GetKeyDown("space"))
-    	{
-    		Mesh mesh = GetComponent<MeshFilter>().mesh;
-    		Vector3[] vertices = mesh.vertices;
-    		vertices = GenerateVertexMap(xs, zs);
-    		mesh.vertices = vertices;
-    	}
+        // pressing space in game mode will generate a new world
+        if (Input.GetKeyDown("space"))
+        {
+            Mesh mesh = GetComponent<MeshFilter>().mesh;
+            updateMesh(mesh);
+        }
+    }   
+
+    void updateMesh(Mesh mesh)
+    {
+        // copy the existing attributes to set
+        Vector3[] vertices = mesh.vertices;
+        Color32[] colors = mesh.colors32;
+        int[] triangles = mesh.triangles;
+
+        // set values
+        vertices = GenerateVertexMap(xs, zs, roughness);
+        colors = ApplyColors(vertices);
+        triangles = GenerateTriangles(vertices);
+
+        // apply back
+        mesh.vertices = vertices;
+        mesh.colors32 = colors;
+        mesh.triangles = triangles;
     }
 
-    // Method to create a cube mesh with coloured vertices
-    Mesh CreatePlaneMesh()
+    Vector3[] GenerateVertexMap(int xs, int zs, float roughness)
     {
-        Mesh m = new Mesh();
-        m.name = "Plane";
-        
-        m.vertices = GenerateVertexMap(xs, zs);
+        // generate 2D height array using diamond square algorithm
+        float[,] heights = GenerateHeightMap(xs, roughness);
 
-        // vertex colours 
-        // use vertex "height" for map implementation when ds algo complete
-        Color32[] colors = new Color32[m.vertices.Length];
-        for (int i = 0; i < m.vertices.Length; i++)
+        // transform 2D array into 1D array of vertices
+        Vector3[] vertices = new Vector3[(xs + 1) * (zs + 1)];
+        for (int i = 0, z = 0; z <= zs; z++)
         {
-            if (m.vertices[i].y <= 0.5f)
+            for (int x = 0; x <= xs; x++, i++)
             {
-                colors[i] = new Color32(34, 139, 34, 1);
+                vertices[i] = new Vector3(x, heights[x, z], z);
             }
-            else if (m.vertices[i].y > 0.5f && m.vertices[i].y <= 4.0f)
+        }
+        return vertices;
+    }
+
+    Color32[] ApplyColors(Vector3[] vertices)
+    {
+        // to do - set variables for height externally
+        Color32[] colors = new Color32[vertices.Length];
+        float[] maxAndMin = getMaxAndMin(vertices);
+        float max = maxAndMin[0];
+        float min = maxAndMin[1];
+        float diff = max - min;
+
+        float snowHeight = diff * snowPerc + min;
+        float rockHeight = diff * rockPerc + min;
+        float grassHeight = diff * grassPerc + min;
+        float sandHeight = diff * sandPerc + min;
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            if (vertices[i].y <= sandHeight) 
             {
-                colors[i] = new Color32(139, 69, 19, 1);
+                // brown
+                colors[i] = new Color32(92, 67, 53, 1);
             }
-            else
+            else if (vertices[i].y <= grassHeight) 
             {
-                colors[i] = new Color(1, 1, 1, 1);
+                // sandy
+                colors[i] = new Color32(232, 196, 128, 1);
+            }
+            else if (vertices[i].y <= rockHeight) 
+            {
+                // green grass
+                colors[i] = new Color32(37, 136, 42, 1);
+            }
+            else if (vertices[i].y <= snowHeight) 
+            {
+                // rock grey
+                colors[i] = new Color32(153, 153, 152, 1);
+            }
+            else 
+            {
+                // snow white
+                colors[i] = new Color32(255, 255, 255, 1);
             }
         };
 
-        m.colors32 = colors;
+        return colors;
+    }
 
+    int[] GenerateTriangles(Vector3[] vertices)
+    {
         // Turn each quad into two triangles
-        // like the below image
+        // like the below
         // ______
         // |\4  5|
         // |1\   |
@@ -75,7 +130,7 @@ public class PlaneScript : MonoBehaviour
 
         // ti == triangle index
         // vi == vertices index
-        int[] triangles = new int[xs * zs * 6];
+        int[] triangles = new int[vertices.Length * 6];
         for (int ti = 0, vi = 0, z = 0; z < zs; z++, vi++)
         {
             for (int x = 0; x < xs; x++, ti += 6, vi++)
@@ -90,28 +145,10 @@ public class PlaneScript : MonoBehaviour
             }
         }
 
-        m.triangles = triangles;
+        return triangles;
+    } 
 
-        return m;
-    }
-
-    Vector3[] GenerateVertexMap(int xs, int zs)
-    {
-        float[,] heights = PopulateDataArray(xs, 30f);
-
-        Vector3[] vertices = new Vector3[(xs + 1) * (zs + 1)];
-        for (int i = 0, z = 0; z <= zs; z++)
-        {
-            for (int x = 0; x <= xs; x++, i++)
-            {
-                vertices[i] = new Vector3(x, heights[x, z], z);
-            }
-        }
-
-        return vertices;
-    }
-
-    private float[,] PopulateDataArray(int vertices, float roughness)
+    private float[,] GenerateHeightMap(int vertices, float roughness)
     {
         int size = vertices + 1;
         int max = size - 1;
@@ -125,27 +162,21 @@ public class PlaneScript : MonoBehaviour
         System.Random r = new System.Random();
 
         // set the four corner points to inital values
-        data[0, 0] = 5;
-        data[max, 0] = 5;
-        data[0, max] = 5;
-        data[max, max] = 5;
+        data[0, 0] = edgeHeight;
+        data[max, 0] = edgeHeight;
+        data[0, max] = edgeHeight;
+        data[max, max] = edgeHeight;
 
 
         for (sideLength = max; sideLength >= 2; sideLength /= 2)
         {
-
             halfSide = sideLength / 2;
 
-
+            // squares
             for (x = 0; x < max; x += sideLength)
             {
-
-
                 for (y = 0; y < max; y += sideLength)
                 {
-
-
-
                     float average = getAverage(data[x, y],
                         data[x + sideLength, y], data[x, y + sideLength],
                         data[x + sideLength, y + sideLength]);
@@ -156,7 +187,7 @@ public class PlaneScript : MonoBehaviour
 
                     if (x == 0 || y == 0)
                     {
-                        val = 5;
+                        val = edgeHeight;
                     }
 
                     if (x == 0)
@@ -173,15 +204,11 @@ public class PlaneScript : MonoBehaviour
 
             }
 
-            //diamond values
+            //diamonds
             for (x = 0; x < max; x += halfSide)
             {
-
-
                 for (y = (x + halfSide) % sideLength; y < max; y += sideLength)
                 {
-
-
                     float average = getAverage(data[(x - halfSide + max) % (max), y],
                                         data[(x + halfSide) % (max), y], data[x, (y + halfSide) % (max)],
                                         data[x, (y - halfSide + max) % (max)]);
@@ -192,7 +219,7 @@ public class PlaneScript : MonoBehaviour
 
                     if (x == 0 || y == 0)
                     {
-                        val = 5;
+                        val = edgeHeight;
                     }
 
                     if (x == 0)
@@ -204,7 +231,6 @@ public class PlaneScript : MonoBehaviour
                     	data[x, max] = val;
                     }
 
-
                     data[x, y] = val;
                 }
 
@@ -212,16 +238,30 @@ public class PlaneScript : MonoBehaviour
             h /= 2.0f;
         }
         return data;
-
     }
 
-    // get the average for the four values
+    float[] getMaxAndMin(Vector3[] array)
+    {
+        float max = array[0].y;
+        float min = array[0].y;
+        foreach (Vector3 vertex in array) 
+        {
+            if (vertex.y < min) 
+            {
+                min = vertex.y;
+            }
+            if (vertex.y > max) 
+            {
+                max = vertex.y;
+            }
+        }
+        return new float[]{max, min};
+    }
+
     private float getAverage(float a, float b, float c, float d)
     {
         return (a + b + c + d) / 4.0f;
     }
-
-
 }
 
 
