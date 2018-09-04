@@ -49,7 +49,6 @@ Shader "Unlit/PhongShader"
 			fixed4 frag (vertOut o) : SV_Target
 			{
 				float3 interpNormal = normalize(o.worldNormal);
-				float4 lightPos = mul(unity_ObjectToWorld, _LightPosition);
 
 				// Calculate ambient RGB intensities
 				float Ka = 3;
@@ -59,7 +58,7 @@ Shader "Unlit/PhongShader"
 				// (when calculating the reflected ray in our specular component)
 				float fAtt = 0.002;
 				float Kd = 1;
-				float3 L = normalize(lightPos);
+				float3 L = normalize(_LightPosition - o.worldVertex.xyz);
 				float LdotN = dot(L, interpNormal);
 				float3 dif = fAtt * _LightColor.rgb * Kd * o.color.rgb * saturate(LdotN);
 
