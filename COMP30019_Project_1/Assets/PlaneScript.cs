@@ -22,7 +22,7 @@ public class PlaneScript : MonoBehaviour
         // Add a MeshRenderer component. This component actually renders the mesh that
         // is defined by the MeshFilter component.
         MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
-        renderer.material.shader = Shader.Find("Unlit/VertexColorShader");
+        renderer.material.shader = Shader.Find("Unlit/PhongShader");
     }
 
     void Update()
@@ -89,27 +89,27 @@ public class PlaneScript : MonoBehaviour
             if (vertices[i].y <= sandHeight) 
             {
                 // brown
-                colors[i] = new Color32(92, 67, 53, 1);
+                colors[i] = new Color32(92, 67, 53, 255);
             }
             else if (vertices[i].y <= grassHeight) 
             {
                 // sandy
-                colors[i] = new Color32(232, 196, 128, 1);
+                colors[i] = new Color32(232, 196, 128, 255);
             }
             else if (vertices[i].y <= rockHeight) 
             {
                 // green grass
-                colors[i] = new Color32(37, 136, 42, 1);
+                colors[i] = new Color32(37, 136, 42, 255);
             }
             else if (vertices[i].y <= snowHeight) 
             {
                 // rock grey
-                colors[i] = new Color32(153, 153, 152, 1);
+                colors[i] = new Color32(153, 153, 152, 255);
             }
             else 
             {
                 // snow white
-                colors[i] = new Color32(255, 255, 255, 1);
+                colors[i] = new Color32(255, 255, 255, 255);
             }
         };
 
