@@ -10,6 +10,9 @@ public class CameraScript : MonoBehaviour {
     PlaneScript referenceScript;
 
 	void Start () {
+        Camera cam = this.gameObject.AddComponent<Camera>();
+        cam.fieldOfView = 40.0f;
+
         this.gameObject.AddComponent<BoxCollider>();
         Rigidbody body = this.gameObject.AddComponent<Rigidbody>();
         body.useGravity = false;
@@ -19,6 +22,9 @@ public class CameraScript : MonoBehaviour {
         referenceObject = GameObject.Find("Plane");
         referenceScript = referenceObject.GetComponent<PlaneScript>();
         this.size = referenceScript.getLimit();
+
+        transform.position = new Vector3(0.0f, size * 0.1f, 0.0f);
+        transform.rotation = Quaternion.LookRotation(new Vector3(size, 0, size));
 	}
 	
     void Update() {
@@ -46,7 +52,7 @@ public class CameraScript : MonoBehaviour {
         transform.Translate(0, 0, impulse);
         transform.Translate(slide, 0, 0);
         transform.Rotate(0, yaw, 0);
-        transform.Rotate(pitch, 0, 0);
+        transform.Rotate(-pitch, 0, 0);
         transform.Rotate(0, 0, rotate);
 
 
