@@ -8,7 +8,11 @@ public class CameraScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		// hides cursor - ESC to show again
+	   this.gameObject.AddComponent<BoxCollider>();
+       Rigidbody body = this.gameObject.AddComponent<Rigidbody>();
+       body.useGravity = false;
+       body.drag = Mathf.Infinity;
+       body.angularDrag = Mathf.Infinity;
 	}
 	
 	// Update is called once per frame
@@ -41,24 +45,3 @@ public class CameraScript : MonoBehaviour {
         transform.Rotate(0, 0, rotate);
     }
 }
-
-        // float impulse = Input.GetAxis("Vertical") * speed;
-        // float slide = Input.GetAxis("Horizontal") * speed;
-        // yaw += Input.GetAxis("Mouse X");
-        // pitch += Input.GetAxis("Mouse Y");
-        // float rotate = 0;
-
-        // if (Input.GetKey("q"))
-        // {
-        // 	rotate = rotationSpeed;
-        // }
-        // if (Input.GetKey("e"))
-        // {
-        // 	rotate = -rotationSpeed;
-        // }
-
-        // impulse *= Time.deltaTime;
-        // slide *= Time.deltaTime;
-        // yaw = Mathf.Clamp((yaw * Mathf.Max(Time.deltaTime, 1.0f)), -0.5f, 0.5f);
-        // pitch = Mathf.Clamp((pitch * Mathf.Max(Time.deltaTime, 1.0f)), -0.5f, 0.5f);
-        // rotate *= Time.deltaTime;

@@ -19,22 +19,22 @@ public class WaterScript : MonoBehaviour
             MeshFilter cubeMesh = this.gameObject.AddComponent<MeshFilter>();
             Mesh mesh = cubeMesh.mesh;
             updateMesh(mesh, size, height);
+
+            MeshCollider meshCollider = this.gameObject.AddComponent<MeshCollider>();
+            meshCollider.sharedMesh = mesh;
         }
         else
         {
             MeshFilter cubeMesh = this.gameObject.GetComponent<MeshFilter>();
             Mesh mesh = cubeMesh.mesh;
             updateMesh(mesh, size, height);
+            MeshCollider meshCollider = this.gameObject.GetComponent<MeshCollider>();
+            meshCollider.sharedMesh = mesh;
         }
 
         if (this.gameObject.GetComponent<MeshRenderer>() == null)
         {
             MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
-            renderer.material.shader = Shader.Find("WaterPhongShader");
-        }
-        else 
-        {
-            MeshRenderer renderer = this.gameObject.GetComponent<MeshRenderer>();
             renderer.material.shader = Shader.Find("WaterPhongShader");
         }
     }

@@ -23,6 +23,9 @@ public class PlaneScript : MonoBehaviour
         Mesh mesh = cubeMesh.mesh;
         updateMesh(mesh);
 
+        MeshCollider meshCollider = this.gameObject.AddComponent<MeshCollider>();
+        meshCollider.sharedMesh = mesh;
+
         // Add a MeshRenderer component. This component actually renders the mesh that
         // is defined by the MeshFilter component.
         MeshRenderer rend = this.gameObject.AddComponent<MeshRenderer>();
