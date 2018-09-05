@@ -4,6 +4,7 @@ The indexes correspond to an x and z co-ordinate, which map to a height.
 We settled on a starting roughness of 10.0 and dividing by 1.8 through the algorithm loop. 
 This provided a good distribution of heights.
 The terrain has dimensions 128x128.
+Pressing the 'space bar' will generate a new terrain. This helps to visualize the degree of randomness in our terrain generation.
 
 // BEN - Can you please explain our implementation of the square edges?
 
