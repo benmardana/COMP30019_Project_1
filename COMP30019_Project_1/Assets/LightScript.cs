@@ -23,11 +23,6 @@ public class LightScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector4 lightLoc = new Vector4(transform.position.x, transform.position.y, transform.position.z, 1.0f);
-        Shader.SetGlobalVector("_LightColor", lightColor);
-        // update location and give to shaders
-        Shader.SetGlobalVector("_LightPosition", lightLoc);
-
         timeCounter += Time.deltaTime * speed;
 
         float x = 64 + Mathf.Cos(timeCounter) * width;
@@ -35,7 +30,9 @@ public class LightScript : MonoBehaviour
         float z = x;
 
         transform.position = new Vector3(x, y, z);
-     
+        Vector4 lightLoc = new Vector4(transform.position.x, transform.position.y, transform.position.z, 1.0f);
+        Shader.SetGlobalVector("_LightColor", lightColor);
+        Shader.SetGlobalVector("_LightPosition", lightLoc);
 
     }
 }
