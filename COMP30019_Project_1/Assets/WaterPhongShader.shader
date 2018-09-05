@@ -34,15 +34,18 @@ Shader "Unlit/WaterPhongShader"
 			
 			vertOut vert (vertIn i)
 			{
-				vertOut o;
 
+				float4 displacement = float4(0.0f, sin(i.vertex.x + _Time.y)/6, 0.0f, 0.0f);
+				i.vertex += displacement;
+
+				i.color += displacement;
+				
+
+				vertOut o;
+				o.worldNormal = normalize(mul(transpose((float3x3)unity_WorldToObject), i.normal.xyz));
 				o.vertex = UnityObjectToClipPos(i.vertex);
 				o.worldVertex = mul(unity_ObjectToWorld, i.vertex);
-
-				o.worldNormal = normalize(mul(transpose((float3x3)unity_WorldToObject), i.normal.xyz));
-
 				o.color = i.color;
-				
 				return o;
 			}
 			

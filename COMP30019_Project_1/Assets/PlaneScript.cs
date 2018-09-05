@@ -5,7 +5,7 @@ using System;
 
 public class PlaneScript : MonoBehaviour
 {
-	int xs = 64, zs = 64;
+    int xs = 128, zs = 128;
     float roughness = 10.0f;
     float edgeHeight = 5.0f;
     float snowPerc = 0.9f;
