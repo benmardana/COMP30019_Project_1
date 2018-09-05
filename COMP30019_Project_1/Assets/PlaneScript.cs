@@ -197,9 +197,10 @@ public class PlaneScript : MonoBehaviour
             {
                 for (y = 0; y < max; y += sideLength)
                 {
-                    float average = getAverage(data[x, y],
-                        data[x + sideLength, y], data[x, y + sideLength],
-                        data[x + sideLength, y + sideLength]);
+                    float average = (data[x, y] +
+                                    data[x + sideLength, y] +
+                                    data[x, y + sideLength] +
+                                    data[x + sideLength, y + sideLength]) / 4;
 
                     // add random
                     rnd = ((float)r.NextDouble() * 2.0f * rgh) - rgh;
@@ -230,9 +231,10 @@ public class PlaneScript : MonoBehaviour
             {
                 for (y = (x + halfSide) % sideLength; y < max; y += sideLength)
                 {
-                    float average = (data[(x - halfSide + max) % (max), y],
-                                        data[(x + halfSide) % (max), y], data[x, (y + halfSide) % (max)],
-                                        data[x, (y - halfSide + max) % (max)]) / 4;
+                    float average = (data[(x - halfSide + max) % (max), y] +
+                                    data[(x + halfSide) % (max), y] +
+                                    data[x, (y + halfSide) % (max)] +
+                                    data[x, (y - halfSide + max) % (max)]) / 4;
 
                     // add random
                     rnd = ((float)r.NextDouble() * 2.0f * rgh) - rgh;
