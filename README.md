@@ -1,15 +1,17 @@
 # COMP30019_Project_1
 
-.gitignore ignores lots of big static unity files
+## Controls
 
-.gitattributes tracks big files that don't need to be transferred back and forth and instead will force git to just check the diffs and update locally
+Forwards: W
+Backwards: S
+Strafe Left: A
+Strafe Right: D
+Pitch: Mouse Y
+Yaw: Mouse X
+Roll Clockwise: E
+Roll Anti-clockwise: Q
 
-Always switch to a new branch when making changes
-
-```bash
-git checkout -b <newbranchname>     # create new branch and switch
-git push -u origin <newbranchname>  # sync to remote and setup tracking
-```
+Refresh Map: SPACE
 
 ## Setup guide
 
