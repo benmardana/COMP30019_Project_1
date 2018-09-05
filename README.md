@@ -3,12 +3,19 @@
 ## Controls
 
 Forwards: W
+
 Backwards: S
+
 Strafe Left: A
+
 Strafe Right: D
+
 Pitch: Mouse Y
+
 Yaw: Mouse X
+
 Roll Clockwise: E
+
 Roll Anti-clockwise: Q
 
 Refresh Map: SPACE
