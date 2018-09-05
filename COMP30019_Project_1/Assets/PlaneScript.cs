@@ -176,7 +176,7 @@ public class PlaneScript : MonoBehaviour
 
         float[,] data = new float[size, size];
         float val, rnd;
-        float h = roughness;
+        float rgh = roughness;
 
         int x, y, sideLength, halfSide = 0;
 
@@ -187,7 +187,6 @@ public class PlaneScript : MonoBehaviour
         data[max, 0] = edgeHeight;
         data[0, max] = edgeHeight;
         data[max, max] = edgeHeight;
-
 
         for (sideLength = max; sideLength >= 2; sideLength /= 2)
         {
@@ -203,9 +202,10 @@ public class PlaneScript : MonoBehaviour
                         data[x + sideLength, y + sideLength]);
 
                     // add random
-                    rnd = ((float)r.NextDouble() * 2.0f * h) - h;
+                    rnd = ((float)r.NextDouble() * 2.0f * rgh) - rgh;
                     val = average + rnd;
 
+                    // square edges
                     if (x == 0 || y == 0)
                     {
                         val = edgeHeight;
@@ -230,14 +230,15 @@ public class PlaneScript : MonoBehaviour
             {
                 for (y = (x + halfSide) % sideLength; y < max; y += sideLength)
                 {
-                    float average = getAverage(data[(x - halfSide + max) % (max), y],
+                    float average = (data[(x - halfSide + max) % (max), y],
                                         data[(x + halfSide) % (max), y], data[x, (y + halfSide) % (max)],
-                                        data[x, (y - halfSide + max) % (max)]);
+                                        data[x, (y - halfSide + max) % (max)]) / 4;
 
                     // add random
-                    rnd = ((float)r.NextDouble() * 2.0f * h) - h;
+                    rnd = ((float)r.NextDouble() * 2.0f * rgh) - rgh;
                     val = average + rnd;
 
+                    // square edges
                     if (x == 0 || y == 0)
                     {
                         val = edgeHeight;
@@ -256,7 +257,8 @@ public class PlaneScript : MonoBehaviour
                 }
 
             }
-            h /= 2.0f;
+            // reduce roughness as we go in;
+            rgh /= 2.0f;
         }
         return data;
     }
@@ -279,9 +281,9 @@ public class PlaneScript : MonoBehaviour
         return new float[]{max, min};
     }
 
-    private float getAverage(float a, float b, float c, float d)
+    public int getLimit()
     {
-        return (a + b + c + d) / 4.0f;
+        return sideSize;
     }
 }
 

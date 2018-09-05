@@ -5,17 +5,22 @@ using UnityEngine;
 public class CameraScript : MonoBehaviour {
 	public int speed = 5;
 	public int rotationSpeed = 60;
+    int size;
+    GameObject referenceObject;
+    PlaneScript referenceScript;
 
-	// Use this for initialization
 	void Start () {
-	   this.gameObject.AddComponent<BoxCollider>();
-       Rigidbody body = this.gameObject.AddComponent<Rigidbody>();
-       body.useGravity = false;
-       body.drag = Mathf.Infinity;
-       body.angularDrag = Mathf.Infinity;
+        this.gameObject.AddComponent<BoxCollider>();
+        Rigidbody body = this.gameObject.AddComponent<Rigidbody>();
+        body.useGravity = false;
+        body.drag = Mathf.Infinity;
+        body.angularDrag = Mathf.Infinity;
+
+        referenceObject = GameObject.Find("Plane");
+        referenceScript = referenceObject.GetComponent<PlaneScript>();
+        this.size = referenceScript.getLimit();
 	}
 	
-	// Update is called once per frame
     void Update() {
         float impulse = Input.GetAxis("Vertical") * speed;
         float slide = Input.GetAxis("Horizontal") * speed;
@@ -43,5 +48,26 @@ public class CameraScript : MonoBehaviour {
         transform.Rotate(0, yaw, 0);
         transform.Rotate(pitch, 0, 0);
         transform.Rotate(0, 0, rotate);
+
+
+        // constrain boundaries
+        if (transform.position.x < 0)
+        {
+            transform.position = new Vector3(0.0f, transform.position.y, transform.position.z);
+        } 
+        if (transform.position.x > size) 
+        {
+            transform.position = new Vector3(size, transform.position.y, transform.position.z);
+        }
+
+        if (transform.position.z < 0.0f)
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y, 0.0f);
+        }
+        if (transform.position.z > size) 
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y, size);
+        }
+
     }
 }
