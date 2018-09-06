@@ -200,7 +200,7 @@ public class PlaneScript : MonoBehaviour
                                     heights[x, z + sideLength] +
                                     heights[x + sideLength, z + sideLength]) / 4;
 
-                    // Random value is any value in the range from -roughness to +roughness (i.e. -10 -> 10)
+                    // Random value is any value in the range from -roughness to +roughness (i.e. -15 -> 15)
                     random = ((float)r.NextDouble() * 2.0f * roughness) - roughness;
                     val = average + random;
 

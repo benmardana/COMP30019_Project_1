@@ -2,4 +2,4 @@ Adam Angelatos - 766374
 Ben McGarvey - 830194
 
 Adam: Diamond-Square Algorithm, Water Ripple Vertex Shader, Sun movement
-Ben: Phong Shader, Camera and Collision
+Ben: Diamond-Square Algorithm, Phong Shader, Camera and Collision
