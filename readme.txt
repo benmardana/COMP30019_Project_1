@@ -19,7 +19,7 @@ While the length of the side of the squares is greater than zero {
 Our algorithm sets a fixed value for all edges for aesthetics and so that they could feasibly be 'tiled' together. 
 (PlaneScript.cs:209, :243)
 
-We settled on a starting 'roughness' of 10.0 and multiplied the random number range by a factor of 1.8 in each loop.
+We settled on a starting 'roughness' of 15.0 and multiplied the random number range by a factor of 1.6 in each loop.
 This provided a good distribution of realistic looking heights.
 The terrain has dimensions 128x128 vertices.
 Pressing the 'space bar' with the game running will generate a new terrain. This helps to visualize the degree of randomness in our terrain generation.
