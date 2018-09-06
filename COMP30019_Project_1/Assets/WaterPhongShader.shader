@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "WaterPhongShader"
+﻿Shader "WaterPhongShader"
 {
 	SubShader
 	{
@@ -33,7 +31,8 @@ Shader "WaterPhongShader"
 
 		vertOut vert(vertIn i)
 		{
-			float4 displacement = float4(0.0f, sin((i.vertex.x + _Time.y)/2) / 10, 0.0f, 0.0f);
+			// Wave displacement.
+			float4 displacement = float4(0.0f, sin(i.vertex.x + _Time.y) / 10, 0.0f, 0.0f);
 			i.vertex += displacement;
 			i.color += displacement;
 

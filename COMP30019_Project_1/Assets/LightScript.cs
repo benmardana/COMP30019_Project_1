@@ -32,7 +32,7 @@ public class LightScript : MonoBehaviour
 
         float x = 64 + Mathf.Cos(timeCounter) * width;
         float y = Mathf.Sin(timeCounter) * height;
-        float z = x;
+        float z = x; // Diagonally across plane
 
         transform.position = new Vector3(x, y, z);
      

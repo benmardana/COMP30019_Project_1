@@ -6,7 +6,7 @@ using System;
 public class PlaneScript : MonoBehaviour
 {
     public int sideSize = 64;
-    float roughness = 10.0f;
+    float roughness = 15.0f;
     float edgeHeight = 5.0f;
     float snowPerc = 0.9f;
     float rockPerc = 0.7f;
@@ -172,97 +172,94 @@ public class PlaneScript : MonoBehaviour
     private float[,] GenerateHeightMap(int vertices, float roughness)
     {
         int size = vertices + 1;
-        int max = size - 1;
 
-        float[,] data = new float[size, size];
-        float val, rnd;
-        float rgh = roughness;
+        float[,] heights = new float[size, size];
+        float val, random;
 
-        int x, y, sideLength, halfSide = 0;
+        int x, z, sideLength, halfSide = 0;
 
         System.Random r = new System.Random();
 
         // set the four corner points to inital values
-        data[0, 0] = edgeHeight;
-        data[max, 0] = edgeHeight;
-        data[0, max] = edgeHeight;
-        data[max, max] = edgeHeight;
+        heights[0, 0] = edgeHeight;
+        heights[vertices, 0] = edgeHeight;
+        heights[0, vertices] = edgeHeight;
+        heights[vertices, vertices] = edgeHeight;
 
-        for (sideLength = max; sideLength >= 2; sideLength /= 2)
+        for (sideLength = vertices; sideLength >= 2; sideLength /= 2)
         {
             halfSide = sideLength / 2;
 
             // squares
-            for (x = 0; x < max; x += sideLength)
+            for (x = 0; x < vertices; x += sideLength)
             {
-                for (y = 0; y < max; y += sideLength)
+                for (z = 0; z < vertices; z += sideLength)
                 {
-                    float average = (data[x, y] +
-                                    data[x + sideLength, y] +
-                                    data[x, y + sideLength] +
-                                    data[x + sideLength, y + sideLength]) / 4;
+                    float average = (heights[x, z] +
+                                    heights[x + sideLength, z] +
+                                    heights[x, z + sideLength] +
+                                    heights[x + sideLength, z + sideLength]) / 4;
 
-                    // add random
-                    rnd = ((float)r.NextDouble() * 2.0f * rgh) - rgh;
-                    val = average + rnd;
+                    // Random value is any value in the range from -roughness to +roughness (i.e. -10 -> 10)
+                    random = ((float)r.NextDouble() * 2.0f * roughness) - roughness;
+                    val = average + random;
 
                     // square edges
-                    if (x == 0 || y == 0)
+                    if (x == 0 || z == 0)
                     {
                         val = edgeHeight;
                     }
 
                     if (x == 0)
                     {
-                    	data[max, y] = val;
+                    	heights[vertices, z] = val;
                     }
-                    if (y == 0)
+                    if (z == 0)
                     {
-                    	data[x, max] = val;
+                    	heights[x, vertices] = val;
                     }
 
-                    data[x + halfSide, y + halfSide] = val;
+                    heights[x + halfSide, z + halfSide] = val;
                 }
 
             }
 
-            //diamonds
-            for (x = 0; x < max; x += halfSide)
+            // diamonds
+            for (x = 0; x < vertices; x += halfSide)
             {
-                for (y = (x + halfSide) % sideLength; y < max; y += sideLength)
+                for (z = (x + halfSide) % sideLength; z < vertices; z += sideLength)
                 {
-                    float average = (data[(x - halfSide + max) % (max), y] +
-                                    data[(x + halfSide) % (max), y] +
-                                    data[x, (y + halfSide) % (max)] +
-                                    data[x, (y - halfSide + max) % (max)]) / 4;
+                    float average = (heights[(x - halfSide + vertices) % (vertices), z] +
+                                    heights[(x + halfSide) % (vertices), z] +
+                                    heights[x, (z + halfSide) % (vertices)] +
+                                    heights[x, (z - halfSide + vertices) % (vertices)]) / 4;
 
-                    // add random
-                    rnd = ((float)r.NextDouble() * 2.0f * rgh) - rgh;
-                    val = average + rnd;
+                    random = ((float)r.NextDouble() * 2.0f * roughness) - roughness;
+                    val = average + random;
 
                     // square edges
-                    if (x == 0 || y == 0)
+                    if (x == 0 || z == 0)
                     {
                         val = edgeHeight;
                     }
 
                     if (x == 0)
                     {
-                    	data[max, y] = val;
+                    	heights[vertices, z] = val;
                     }
-                    if (y == 0)
+                    if (z == 0)
                     {
-                    	data[x, max] = val;
+                    	heights[x, vertices] = val;
                     }
 
-                    data[x, y] = val;
+                    heights[x, z] = val;
                 }
 
             }
-            // reduce roughness as we go in;
-            rgh /= 2.0f;
+            // 
+            roughness /= 1.6f;
         }
-        return data;
+        return heights;
     }
 
     float[] getMaxAndMin(Vector3[] array)
